@@ -287,7 +287,67 @@ def esbEnable(serviceId):
 
     return jsonify(resp)
 
-        
+
+@app.route('/audit/', methods=['POST'])
+@auth.login_required
+def auditInsert():
+    resp = {'status':False}
+    try:
+        body = request.json
+        # myLogger.logging_info('flask','Audit Insert Body \t','body:',body,'\t')
+
+        TIMESTAMP = body['TIMESTAMP']
+        PN = body['PN']
+        NAME = body['NAME']
+        TYPE = body['TYPE']
+        MESSAGE = body['MESSAGE']
+        strSql = f"INSERT INTO AUDIT_TRAIL (TIMESTAMP, PN, NAME, TYPE, MESSAGE) \
+        VALUE(\'{TIMESTAMP}\',\'{PN}\',\'{NAME}\', \'{TYPE}\',\'{MESSAGE}\' );"
+
+        if strSql != '':
+            result = db.executeQuery(strSql, dbMDO)
+            # resp['result'] = 'Pengingat' + body['name'] + 'berhasil ditambahkan'
+            resp['result'] = "Success adding audit"
+            resp['status'] = True
+        else :
+            resp['message'] = 'fail to generate query'
+    except Exception as e:
+        myLogger.logging_error('flask','Error while inserting audit, e:',e)
+    return jsonify(resp)
+
+@app.route('/audit/', methods=['GET'])
+@auth.login_required
+def auditView():
+    resp = {'status':False}
+    sql = ' SELECT * FROM AUDIT_TRAIL LIMIT 150; '
+    mapRowsSelected = {
+        'TIMESTAMP':0,
+        'PN':1,
+        'NAME':2,
+        'TYPE':3,
+        'MESSAGE':4
+        }
+    if sql != '':
+        data = []
+        rows = db.selectData(sql,dbMDO)
+        for row in rows:
+            try:
+                data.append({
+                    'TIMESTAMP':row[mapRowsSelected['TIMESTAMP']],
+                    'PN':row[mapRowsSelected['PN']],
+                    'NAME':row[mapRowsSelected['NAME']],
+                    'TYPE':row[mapRowsSelected['TYPE']],
+                    'MESSAGE':row[mapRowsSelected['MESSAGE']],
+                    })
+            except Exception as e:
+                myLogger.logging_error('flask', 'error looping response audit view, e:', e)
+        resp['data'] = data
+        resp['status'] = True
+    else : 
+        resp['message'] = 'fail to generate query for audit view'
+    return jsonify(resp)
+
+
 @app.route("/hello")
 def hellow():
     if 1+1 == 2:
