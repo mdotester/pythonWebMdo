@@ -1,5 +1,5 @@
 import mysql.connector
-import database as sqlServerDB
+# import database as sqlServerDB
 
 mySqlSDKDatabase = {
     "host" : "172.18.44.227",

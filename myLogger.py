@@ -4,7 +4,11 @@ import time
 import logging.handlers # import RotatingFileHandler
  
 # loggingPath = './logs/' 
-loggingPath = '/home/python/logs/'
+#prod
+# loggingPath = '/home/python/logs/' 
+
+#dev
+loggingPath = "C:\\Users\\Irwin\\Desktop\\WebMdo\\Backend\\pythonWebMdo"
  
 def setup_logger(logger,filename):
     log_handler = logging.handlers.TimedRotatingFileHandler(loggingPath+filename+'.log',  when='D',backupCount=5)
