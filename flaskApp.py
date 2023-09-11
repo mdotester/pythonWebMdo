@@ -22,6 +22,13 @@ dbMDO = {
     'password' : 'P@ssw0rd123'
 }
 
+dbDEV = {
+    'host' : "127.0.0.1",
+    'database' : 'MDO',
+    'username' : 'sa',
+    'password' : 'P@ssw0rd'
+}
+
 
 @auth.verify_password
 def verify(username, password):
@@ -40,34 +47,50 @@ def grafanaNotify():
     return response
 
 @app.route('/login/', methods=['POST'])
-@auth.login_required
+# @auth.login_required
+#def login prod
+# def login():
+#     resp = {'status':False}
+#     body = request.json
+#     try:
+#         url = 'https://apiclose.bri.co.id/gateway/apiActiveDirectory/1.0/ADAuthentication2'
+#         headers = {"Authorization":"Basic Y29udGFjdENlbnRlcjpDMG50NGN0QzNudGVyITE0MDE3","Content-Type":"application/json"}
+#         myLogger.logging_info('flask','/login/ \t','body:',body,'\t')
+#         # json = body
+#         response = requests.post(url,headers=headers,json = body)
+#         jsonResp = response.json()
+#         myLogger.logging_info('flask','/ADAuthentication2/ \t','jsonResp:',jsonResp,'\t')
+#         if jsonResp['responseCode'] == '00':
+#             #inquiry pn detail
+#             resp['status'] = True
+#             url = 'https://apiclose.bri.co.id/gateway/apiBristars/1.0/pekerja/inquiryPekerjaByPn'
+#             headers = {"Authorization":"Basic Y29udGFjdENlbnRlcjpDMG50NGN0QzNudGVyITE0MDE3","Content-Type":"application/json"}
+#             response_detail_pn = requests.post(url,headers=headers,json = {'pernr':body['userLogin']})
+#             json_response_detail_pn = response_detail_pn.json()
+#             myLogger.logging_info('flask','/inquiryPekerjaByPn/ \t','jsonResp:',json_response_detail_pn,'\t')
+#             resp['data'] = json_response_detail_pn['responseData']
+#             resp['data']['email'] = jsonResp['responseMessage']
+#         else :
+#             resp['message'] = 'Invalid Credentials'
+#         myLogger.logging_info('flask','/login/ \t','response:',response.json(),'\t')
+#     except Exception as e:
+#         myLogger.logging_error('flask','got error login,e:',e)
+#     return jsonify(resp)
+
+#def login dev
 def login():
     resp = {'status':False}
-    body = request.json
+    # body = request.json
     try:
-        url = 'https://apiclose.bri.co.id/gateway/apiActiveDirectory/1.0/ADAuthentication2'
-        headers = {"Authorization":"Basic Y29udGFjdENlbnRlcjpDMG50NGN0QzNudGVyITE0MDE3","Content-Type":"application/json"}
-        myLogger.logging_info('flask','/login/ \t','body:',body,'\t')
-        # json = body
-        response = requests.post(url,headers=headers,json = body)
-        jsonResp = response.json()
-        myLogger.logging_info('flask','/ADAuthentication2/ \t','jsonResp:',jsonResp,'\t')
-        if jsonResp['responseCode'] == '00':
-            #inquiry pn detail
-            resp['status'] = True
-            url = 'https://apiclose.bri.co.id/gateway/apiBristars/1.0/pekerja/inquiryPekerjaByPn'
-            headers = {"Authorization":"Basic Y29udGFjdENlbnRlcjpDMG50NGN0QzNudGVyITE0MDE3","Content-Type":"application/json"}
-            response_detail_pn = requests.post(url,headers=headers,json = {'pernr':body['userLogin']})
-            json_response_detail_pn = response_detail_pn.json()
-            myLogger.logging_info('flask','/inquiryPekerjaByPn/ \t','jsonResp:',json_response_detail_pn,'\t')
-            resp['data'] = json_response_detail_pn['responseData']
-            resp['data']['email'] = jsonResp['responseMessage']
-        else :
-            resp['message'] = 'Invalid Credentials'
+        resp['status'] = True
+        resp['data'] = {'sname':'dev','pernr':'00123123'}
+        # sname ini untuk nanti di tampilan web, pernr untuk NIM nya
         myLogger.logging_info('flask','/login/ \t','response:',response.json(),'\t')
     except Exception as e:
         myLogger.logging_error('flask','got error login,e:',e)
     return jsonify(resp)
+
+
 
 @app.route('/fetchService/', methods=['POST'])
 @auth.login_required
@@ -174,7 +197,7 @@ def insertQueryAlert(bodyReq):
 
 # Intended for development purpose, for querying from BRI_SERVICE_DUMMY ON 141.41
 @app.route('/esbGet/', methods=['GET'])
-@auth.login_required
+# @auth.login_required
 def getEsbData():
     resp = {'status':False}
     sql = ' SELECT * FROM BRI_SERVICE_DUMMY LIMIT 150; '
@@ -193,7 +216,11 @@ def getEsbData():
         }
     if sql != '':
         data = []
-        rows = db.selectData(sql,dbMDO)
+        #prod
+        #rows = db.selectData(sql,dbMDO)
+        
+        #dev
+        rows = db.selectData(sql,dbDEV)
         for row in rows:
             try:
                 data.append({
@@ -229,8 +256,14 @@ def esbDisable(serviceId):
     #Insert updated history of updated service into BRI_SERVICE_HISTORY
     sqlInsertHist = 'INSERT INTO BRI_SERVICE_HISTORY (OLD_SERVICE_ID,UPDATED_SERVICE_ID,STATUS) VALUES (\'' + serviceId + '\',\'' + updatedServiceId + '\',\'DISABLED\');'
     try:
-        result = db.executeQuery(sql, dbMDO)
-        insertHistoryStatus = db.executeQuery(sqlInsertHist, dbMDO)
+        #prod
+        #result = db.executeQuery(sql, dbMDO)
+        #insertHistoryStatus = db.executeQuery(sqlInsertHist, dbMDO)
+
+        #dev
+        result = db.executeQuery(sql, dbDEV)
+        insertHistoryStatus = db.executeQuery(sqlInsertHist, dbDEV)
+        
         resp['insertHistoryStatus'] = insertHistoryStatus
         resp['result'] = result
         resp['status'] = True
@@ -246,7 +279,7 @@ def esbDisable(serviceId):
 def esbEnable(serviceId):
     resp = {'status' : False}
     resp['serviceID'] = serviceId
-    sqlSelectHist = 'SELECT * FROM BRI_SERVICE_HISTORY WHERE UPDATED_SERVICE_ID = \'' + serviceId + '\';'
+    sqlSelectHist = 'SELECT * FROM BRI_SERVICE_HISTORY WHERE UPDATED_SERVICE_ID = Z\'' + serviceId + '\';'
     mapRowsSelected = {
         'OLD_SERVICE_ID':0,
         'UPDATED_SERVICE_ID':1,
@@ -254,7 +287,11 @@ def esbEnable(serviceId):
     }
     try:
         data = []
-        rows = db.selectData(sqlSelectHist,dbMDO)
+        #prod
+        # rows = db.selectData(sqlSelectHist,dbMDO)
+        
+        #dev
+        rows = db.selectData(sqlSelectHist,dbDEV)
         for row in rows:
             # resp['result'] = result
             try:
@@ -274,8 +311,14 @@ def esbEnable(serviceId):
         sql = 'UPDATE BRI_SERVICE_DUMMY SET SERVICE_ID = \'' + oldServiceId +  '\' WHERE SERVICE_ID = \'' + updatedServiceId + '\';'
         sqlDeleteHist = 'DELETE FROM BRI_SERVICE_HISTORY WHERE UPDATED_SERVICE_ID = \'' + updatedServiceId + '\';'
         try:
-            result = db.executeQuery(sql,dbMDO)
-            deleteStatus = db.executeQuery(sqlDeleteHist, dbMDO)
+            #prod
+            # result = db.executeQuery(sql,dbMDO)
+            # deleteStatus = db.executeQuery(sqlDeleteHist, dbMDO)
+
+            #dev
+            result = db.executeQuery(sql,dbDEV)
+            deleteStatus = db.executeQuery(sqlDeleteHist, dbDEV)
+
             resp['result'] = result
             resp['deleteStatus'] = deleteStatus
             resp['status'] = True
@@ -294,7 +337,7 @@ def auditInsert():
     resp = {'status':False}
     try:
         body = request.json
-        # myLogger.logging_info('flask','Audit Insert Body \t','body:',body,'\t')
+        myLogger.logging_info('flask','Audit Insert Body \t','body:',body,'\t')
 
         TIMESTAMP = body['TIMESTAMP']
         PN = body['PN']
@@ -305,7 +348,11 @@ def auditInsert():
         VALUE(\'{TIMESTAMP}\',\'{PN}\',\'{NAME}\', \'{TYPE}\',\'{MESSAGE}\' );"
 
         if strSql != '':
-            result = db.executeQuery(strSql, dbMDO)
+            #Prod
+            # result = db.executeQuery(strSql, dbMDO)
+
+            #Dev
+            result = db.executeQuery(strSql, dbDEV)
             # resp['result'] = 'Pengingat' + body['name'] + 'berhasil ditambahkan'
             resp['result'] = "Success adding audit"
             resp['status'] = True
@@ -329,7 +376,11 @@ def auditView():
         }
     if sql != '':
         data = []
-        rows = db.selectData(sql,dbMDO)
+        #Prod
+        #rows = db.selectData(sql,dbMDO)
+
+        #Dev
+        rows = db.selectData(sql,dbDEV)
         for row in rows:
             try:
                 data.append({
