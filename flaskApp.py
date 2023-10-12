@@ -398,6 +398,16 @@ def auditView():
         resp['message'] = 'fail to generate query for audit view'
     return jsonify(resp)
 
+@app.route('/hourly-report/view', methods=['GET'])
+@auth.login_required
+def hourlyReportView():
+    return "hourly report View coming soon"
+
+@app.route('/hourly-report/insert', methods=['POST'])
+@auth.login_required
+def hourlyReportInsert():
+    return "hourly report Insert coming soon"
+
 
 @app.route("/hello")
 def hellow():
