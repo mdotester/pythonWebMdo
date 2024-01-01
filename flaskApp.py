@@ -91,7 +91,6 @@ def login():
     return jsonify(resp)
 
 
-
 @app.route('/fetchService/', methods=['POST'])
 @auth.login_required
 def fetchService():
@@ -409,16 +408,181 @@ def hourlyReportInsert():
     return "hourly report Insert coming soon"
 
 
-@app.route("/hello")
+@app.route("/hello", methods=['GET'])
 def hellow():
+   
     if 1+1 == 2:
         return "Working From 172.18.141.41"
     else : 
         return "Not Working"
     
-    
-    
+@app.route("/get-fds")
+@auth.login_required
+def getFraudCheckService():
+    resp = {'status':False}
+    sql = " SELECT * FROM BRI_SERVICE_DUMMY WHERE DO_FRAUD_CHECK IN ('Y','N') LIMIT 150; "
+    mapRowsSelected = {
+        'SERVICE_ID':0,
+        'AGGREGATOR_ID':1,
+        'TRX_TYPE_ID':2,
+        'LIMIT_TYPE_ID':3,
+        'ESB_SVC_NAME':4,
+        'ADVANCE_SVC_NAME':5,
+        'SERVICE_DESC':6,
+        'IS_CONDITIONAL_FEE':7,
+        'EXISTING_REMARK_FORMULA':8,
+        'EXISTING_REMARK2_FORMULA':9,
+        'DO_FRAUD_CHECK':10
+        }
+    if sql != '':
+        data = []
+        #prod
+        #rows = db.selectData(sql,dbMDO)
+        
+        #dev
+        rows = db.selectData(sql,dbDEV)
+        # return str(len(rows))
+        for row in rows:
+            try:
+                data.append({
+                    'SERVICE_ID':row[mapRowsSelected['SERVICE_ID']],
+                    'AGGREGATOR_ID':row[mapRowsSelected['AGGREGATOR_ID']],
+                    'TRX_TYPE_ID':row[mapRowsSelected['TRX_TYPE_ID']],
+                    'LIMIT_TYPE_ID':row[mapRowsSelected['LIMIT_TYPE_ID']],
+                    'ESB_SVC_NAME':row[mapRowsSelected['ESB_SVC_NAME']],
+                    'ADVANCE_SVC_NAME':row[mapRowsSelected['ADVANCE_SVC_NAME']],
+                    'SERVICE_DESC':row[mapRowsSelected['SERVICE_DESC']],
+                    'IS_CONDITIONAL_FEE':row[mapRowsSelected['IS_CONDITIONAL_FEE']],
+                    'EXISTING_REMARK_FORMULA':row[mapRowsSelected['EXISTING_REMARK_FORMULA']],
+                    'EXISTING_REMARK2_FORMULA':row[mapRowsSelected['EXISTING_REMARK2_FORMULA']],
+                    'DO_FRAUD_CHECK':row[mapRowsSelected['DO_FRAUD_CHECK']]
+                    })
+            except Exception as e:
+                myLogger.logging_error('flask', 'error getFraudCheckService, e:', e)
+        resp['data'] = data
+        resp['status'] = True
+        resp['count'] = len(rows)
+    else : 
+        resp['message'] = 'fail to generate query'
+    return jsonify(resp)
 
+def updateFraudCheckService(service_id, value):
+    sqlUpdate = f""" UPDATE BRI_SERVICE_DUMMY SET
+        DO_FRAUD_CHECK = '{value}'
+        WHERE SERVICE_ID IN ({service_id});
+        """
+    result = db.executeQuery(sqlUpdate, dbDEV)
+    return result
+
+@app.route("/disable-fds", methods=['POST'])
+@auth.login_required
+def disableFraudCheckService():
+    resp = {'status':False}
+    data = request.get_json()
+    service = data["SERVICE_ID"]
+    serviceString = ', '.join(map("'{0}'".format, service))
+    if len(serviceString) == 0 : 
+        return f'Empty Service IDs'
+
+    sqlSelect = f" SELECT * FROM BRI_SERVICE_DUMMY WHERE SERVICE_ID IN ({serviceString}) LIMIT 150; "
+    mapRowsSelected = {
+        'SERVICE_ID':0,
+        'AGGREGATOR_ID':1,
+        'TRX_TYPE_ID':2,
+        'LIMIT_TYPE_ID':3,
+        'ESB_SVC_NAME':4,
+        'ADVANCE_SVC_NAME':5,
+        'SERVICE_DESC':6,
+        'IS_CONDITIONAL_FEE':7,
+        'EXISTING_REMARK_FORMULA':8,
+        'EXISTING_REMARK2_FORMULA':9,
+        'DO_FRAUD_CHECK':10
+        }
+    
+    if len(sqlSelect) != 0:
+        data = []
+        result = updateFraudCheckService(serviceString, 'N')
+        rows = db.selectData(sqlSelect,dbDEV)
+        for row in rows:
+            try:
+                data.append({
+                    'SERVICE_ID':row[mapRowsSelected['SERVICE_ID']],
+                    'AGGREGATOR_ID':row[mapRowsSelected['AGGREGATOR_ID']],
+                    'TRX_TYPE_ID':row[mapRowsSelected['TRX_TYPE_ID']],
+                    'LIMIT_TYPE_ID':row[mapRowsSelected['LIMIT_TYPE_ID']],
+                    'ESB_SVC_NAME':row[mapRowsSelected['ESB_SVC_NAME']],
+                    'ADVANCE_SVC_NAME':row[mapRowsSelected['ADVANCE_SVC_NAME']],
+                    'SERVICE_DESC':row[mapRowsSelected['SERVICE_DESC']],
+                    'IS_CONDITIONAL_FEE':row[mapRowsSelected['IS_CONDITIONAL_FEE']],
+                    'EXISTING_REMARK_FORMULA':row[mapRowsSelected['EXISTING_REMARK_FORMULA']],
+                    'EXISTING_REMARK2_FORMULA':row[mapRowsSelected['EXISTING_REMARK2_FORMULA']],
+                    'DO_FRAUD_CHECK':row[mapRowsSelected['DO_FRAUD_CHECK']]
+                    })
+            except Exception as e:
+                myLogger.logging_error('flask', 'error disableFraudCheckService, e:', e)
+        resp['data'] = data
+        resp['status'] = True
+        resp['count'] = len(rows)
+        resp['result'] = result
+
+    # return f'Query : {sql}'
+    return jsonify(resp)
+
+    # resp = {'status':False}
+    
+@app.route("/enable-fds", methods=['POST'])
+@auth.login_required
+def enableFraudCheckService():
+    resp = {'status':False}
+    data = request.get_json()
+    service = data["SERVICE_ID"]
+    serviceString = ', '.join(map("'{0}'".format, service))
+    if len(serviceString) == 0 : 
+        return f'Empty Service IDs'
+
+    sqlSelect = f" SELECT * FROM BRI_SERVICE_DUMMY WHERE SERVICE_ID IN ({serviceString}) LIMIT 150; "
+    mapRowsSelected = {
+        'SERVICE_ID':0,
+        'AGGREGATOR_ID':1,
+        'TRX_TYPE_ID':2,
+        'LIMIT_TYPE_ID':3,
+        'ESB_SVC_NAME':4,
+        'ADVANCE_SVC_NAME':5,
+        'SERVICE_DESC':6,
+        'IS_CONDITIONAL_FEE':7,
+        'EXISTING_REMARK_FORMULA':8,
+        'EXISTING_REMARK2_FORMULA':9,
+        'DO_FRAUD_CHECK':10
+        }
+    
+    if len(sqlSelect) != 0:
+        data = []
+        result = updateFraudCheckService(serviceString, 'Y')
+        rows = db.selectData(sqlSelect,dbDEV)
+        for row in rows:
+            try:
+                data.append({
+                    'SERVICE_ID':row[mapRowsSelected['SERVICE_ID']],
+                    'AGGREGATOR_ID':row[mapRowsSelected['AGGREGATOR_ID']],
+                    'TRX_TYPE_ID':row[mapRowsSelected['TRX_TYPE_ID']],
+                    'LIMIT_TYPE_ID':row[mapRowsSelected['LIMIT_TYPE_ID']],
+                    'ESB_SVC_NAME':row[mapRowsSelected['ESB_SVC_NAME']],
+                    'ADVANCE_SVC_NAME':row[mapRowsSelected['ADVANCE_SVC_NAME']],
+                    'SERVICE_DESC':row[mapRowsSelected['SERVICE_DESC']],
+                    'IS_CONDITIONAL_FEE':row[mapRowsSelected['IS_CONDITIONAL_FEE']],
+                    'EXISTING_REMARK_FORMULA':row[mapRowsSelected['EXISTING_REMARK_FORMULA']],
+                    'EXISTING_REMARK2_FORMULA':row[mapRowsSelected['EXISTING_REMARK2_FORMULA']],
+                    'DO_FRAUD_CHECK':row[mapRowsSelected['DO_FRAUD_CHECK']]
+                    })
+            except Exception as e:
+                myLogger.logging_error('flask', 'error enableFraudCheckService, e:', e)
+        resp['data'] = data
+        resp['status'] = True
+        resp['count'] = len(rows)
+        resp['result'] = result
+
+    # return f'Query : {sql}'
+    return jsonify(resp)
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=3131)
