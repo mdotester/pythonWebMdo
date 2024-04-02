@@ -15,13 +15,37 @@ dbMDO = {
     'password' : 'P@ssw0rd123'
 }
 
-def selectData(strSql,strConn):
-    with mysql.connector.connect(host=strConn["host"],database=strConn["database"],user=strConn["username"],password=strConn["password"]) as conn:
-        cursor = conn.cursor()
-        cursor.execute(strSql)
-        rows = cursor.fetchall()
-        cursor.close()
-        return rows
+
+# def record_user_login(user_data, strConn):
+#     try:
+#         conn = mysql.connector.connect(host=strConn["host"], database=strConn["database"], user=strConn["username"], password=strConn["password"])
+#         cursor = conn.cursor()
+        
+#         # Ekstrak data pengguna dari user_data
+#         pn = user_data['personalnum']
+#         pw = user_data['password']
+#         role= user_data['role']
+        
+#         # Pernyataan SQL INSERT
+#         strSql = """
+#         INSERT INTO MDO_app (personalnum, password, role) 
+#         VALUES (%s,%s,%s)
+#         """
+        
+#         # Menjalankan pernyataan SQL INSERT dengan parameter yang diberikan
+#         cursor.execute(strSql, (personalnum, password, role))
+        
+#         # Commit perubahan ke database
+#         conn.commit()
+        
+#         print("User login data recorded successfully!")
+#     except mysql.connector.Error as e:
+#         print(f"Error recording user login data: {e}")
+#     finally:
+#         cursor.close()
+#         conn.close()
+# # Panggil fungsi untuk merekam data login pengguna
+# record_user_login(user_data, dbMDO)
 
 def executeQuery(strSql,strConn):
     retVal = 0

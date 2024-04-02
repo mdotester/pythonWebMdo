@@ -1,0 +1,39 @@
+2024-03-19 11:03:41,846 ERROR: got error login,e:name 'response' is not defined
+2024-03-19 11:04:23,207 ERROR: got error login,e:name 'response' is not defined
+2024-03-19 11:04:59,209 ERROR: got error login,e:name 'response' is not defined
+2024-03-19 11:05:36,166 ERROR: got error login,e:name 'response' is not defined
+2024-03-19 11:08:36,114 ERROR: got error login,e:name 'response' is not defined
+2024-03-19 11:12:50,997 ERROR: got error login,e:name 'response' is not defined
+2024-03-19 11:12:51,592 ERROR: got error login,e:name 'response' is not defined
+2024-03-19 11:13:02,444 ERROR: got error login,e:name 'response' is not defined
+2024-03-19 11:13:38,799 ERROR: got error login,e:name 'response' is not defined
+2024-03-19 11:19:02,305 ERROR: got error login,e:name 'response' is not defined
+2024-03-19 12:05:34,892 ERROR: got error login,e:name 'response' is not defined
+2024-03-19 12:17:15,355 ERROR: got error login,e:name 'response' is not defined
+2024-03-19 12:17:15,373 ERROR: got error login,e:name 'response' is not defined
+2024-03-19 12:21:45,157 INFO: /login/ 	body:{'userLogin': 'a', 'password': 'a', 'channelId': 'Test Channel', 'userAgent': 'Firefox', 'ipAddress': '172.18.141.41'}	
+2024-03-19 12:21:45,239 INFO: /ADAuthentication2/ 	jsonResp:{'responseCode': '01', 'responseMessage': 'False'}	
+2024-03-19 12:21:45,239 INFO: /login/ 	response:{'responseCode': '01', 'responseMessage': 'False'}	
+2024-03-19 12:21:55,068 INFO: /login/ 	body:{'userLogin': '00294605', 'password': 'Supet1998', 'channelId': 'Test Channel', 'userAgent': 'Firefox', 'ipAddress': '172.18.141.41'}	
+2024-03-19 12:21:55,191 INFO: /ADAuthentication2/ 	jsonResp:{'responseCode': '00', 'responseMessage': 'vadio.putradeiv@corp.bri.co.id'}	
+2024-03-19 12:21:55,237 INFO: /inquiryPekerjaByPn/ 	jsonResp:{'responseCode': '00', 'responseMessage': 'success', 'responseData': {'pernr': '00294605', 'werks': 'KP00', 'btrtl': 'KP01', 'kostl': 'PS19019', 'orgeh': '70254720', 'orgehPGS': '', 'stell': '70520069', 'sname': 'Vadio Putradeiv Noor', 'werksTX': 'Kantor Pusat', 'btrtlTX': 'Kantor Pusat', 'kstlTX': 'DIVISI APPLICATION MANAGEMENT & OPERATION', 'orgehTX': 'MIDDLEWARE APPLICATION OPERATION SERVICES FUNCTION', 'orgehPGSTX': '', 'stellTX': 'MANAGER', 'branch': '00229', 'tipeUker': 'KP', 'hilfm': '159', 'hilfmPGS': '', 'htext': 'Manager', 'htextPGS': '', 'corpTitle': 'Manager', 'lastSync': '2024-03-19'}}	
+2024-03-19 12:21:55,237 INFO: /login/ 	response:{'responseCode': '00', 'responseMessage': 'vadio.putradeiv@corp.bri.co.id'}	
+2024-03-19 12:22:16,895 INFO: /login/ 	body:{'userLogin': '00345862', 'password': 'Susicantik25!', 'channelId': 'Test Channel', 'userAgent': 'Firefox', 'ipAddress': '172.18.141.41'}	
+2024-03-19 12:22:17,032 INFO: /ADAuthentication2/ 	jsonResp:{'responseCode': '00', 'responseMessage': 'adiliyanisaputra@corp.bri.co.id'}	
+2024-03-19 12:22:17,079 INFO: /inquiryPekerjaByPn/ 	jsonResp:{'responseCode': '00', 'responseMessage': 'success', 'responseData': {'pernr': '00345862', 'werks': 'PL00', 'btrtl': 'PL01', 'kostl': 'PS89000', 'orgeh': '70501647', 'orgehPGS': '', 'stell': '70501715', 'sname': 'Adi Liyani Saputra', 'werksTX': 'Corporate University', 'btrtlTX': 'Corporate University', 'kstlTX': 'BRI CORPORATE UNIVERSITY', 'orgehTX': 'BFLP IT ANGKATAN 19', 'orgehPGSTX': '', 'stellTX': 'TRAINEE', 'branch': '00229', 'tipeUker': 'KP', 'hilfm': '090', 'hilfmPGS': '', 'htext': 'Trainee', 'htextPGS': '', 'corpTitle': 'Junior Manager', 'lastSync': '2024-03-19'}}	
+2024-03-19 12:22:17,079 INFO: /login/ 	response:{'responseCode': '00', 'responseMessage': 'adiliyanisaputra@corp.bri.co.id'}	
+2024-03-19 12:23:37,994 INFO: /login/ 	body:{'userLogin': 'a', 'password': 'a', 'channelId': 'Test Channel', 'userAgent': 'Firefox', 'ipAddress': '172.18.141.41'}	
+2024-03-19 12:23:38,096 INFO: /ADAuthentication2/ 	jsonResp:{'responseCode': '01', 'responseMessage': 'False'}	
+2024-03-19 12:23:38,097 INFO: /login/ 	response:{'responseCode': '01', 'responseMessage': 'False'}	
+2024-03-19 12:23:58,935 INFO: /login/ 	body:{'userLogin': '00345862', 'password': 'Susicantik25!', 'channelId': 'Test Channel', 'userAgent': 'Firefox', 'ipAddress': '172.18.141.41'}	
+2024-03-19 12:23:59,055 INFO: /ADAuthentication2/ 	jsonResp:{'responseCode': '00', 'responseMessage': 'adiliyanisaputra@corp.bri.co.id'}	
+2024-03-19 12:23:59,103 INFO: /inquiryPekerjaByPn/ 	jsonResp:{'responseCode': '00', 'responseMessage': 'success', 'responseData': {'pernr': '00345862', 'werks': 'PL00', 'btrtl': 'PL01', 'kostl': 'PS89000', 'orgeh': '70501647', 'orgehPGS': '', 'stell': '70501715', 'sname': 'Adi Liyani Saputra', 'werksTX': 'Corporate University', 'btrtlTX': 'Corporate University', 'kstlTX': 'BRI CORPORATE UNIVERSITY', 'orgehTX': 'BFLP IT ANGKATAN 19', 'orgehPGSTX': '', 'stellTX': 'TRAINEE', 'branch': '00229', 'tipeUker': 'KP', 'hilfm': '090', 'hilfmPGS': '', 'htext': 'Trainee', 'htextPGS': '', 'corpTitle': 'Junior Manager', 'lastSync': '2024-03-19'}}	
+2024-03-19 12:23:59,103 INFO: /login/ 	response:{'responseCode': '00', 'responseMessage': 'adiliyanisaputra@corp.bri.co.id'}	
+2024-03-19 12:28:05,025 INFO: /login/ 	body:{'userLogin': '90171671', 'password': 'G@hri2801', 'channelId': 'Test Channel', 'userAgent': 'Firefox', 'ipAddress': '172.18.141.41'}	
+2024-03-19 12:28:05,146 INFO: /ADAuthentication2/ 	jsonResp:{'responseCode': '00', 'responseMessage': '90171671@bri.co.id'}	
+2024-03-19 12:28:05,194 INFO: /inquiryPekerjaByPn/ 	jsonResp:{'responseCode': '00', 'responseMessage': 'success', 'responseData': {'pernr': '90171671', 'werks': 'KP00', 'btrtl': 'KP01', 'kostl': 'PS19019', 'orgeh': '70238340', 'orgehPGS': '', 'stell': '', 'sname': 'Gahri Rafli', 'werksTX': 'Kantor Pusat', 'btrtlTX': 'Kantor Pusat', 'kstlTX': 'DIVISI APPLICATION MANAGEMENT & OPERATIO', 'orgehTX': 'APPLICATION MANAGEMENT & OPERATION DIVIS', 'orgehPGSTX': '', 'stellTX': 'Internship ITCAMP', 'branch': '229', 'tipeUker': 'KP', 'hilfm': '', 'hilfmPGS': '', 'htext': '', 'htextPGS': '', 'corpTitle': 'Assistant', 'lastSync': '2024-03-19'}}	
+2024-03-19 12:28:05,194 INFO: /login/ 	response:{'responseCode': '00', 'responseMessage': '90171671@bri.co.id'}	
+2024-03-19 15:46:40,588 INFO: /login/ 	body:{'userLogin': '00345862', 'password': 'Susicantik25!', 'channelId': 'Test Channel', 'userAgent': 'Firefox', 'ipAddress': '172.18.141.41'}	
+2024-03-19 15:46:40,708 INFO: /ADAuthentication2/ 	jsonResp:{'responseCode': '00', 'responseMessage': 'adiliyanisaputra@corp.bri.co.id'}	
+2024-03-19 15:46:40,845 INFO: /inquiryPekerjaByPn/ 	jsonResp:{'responseCode': '00', 'responseMessage': 'success', 'responseData': {'pernr': '00345862', 'werks': 'PL00', 'btrtl': 'PL01', 'kostl': 'PS89000', 'orgeh': '70501647', 'orgehPGS': '', 'stell': '70501715', 'sname': 'Adi Liyani Saputra', 'werksTX': 'Corporate University', 'btrtlTX': 'Corporate University', 'kstlTX': 'BRI CORPORATE UNIVERSITY', 'orgehTX': 'BFLP IT ANGKATAN 19', 'orgehPGSTX': '', 'stellTX': 'TRAINEE', 'branch': '00229', 'tipeUker': 'KP', 'hilfm': '090', 'hilfmPGS': '', 'htext': 'Trainee', 'htextPGS': '', 'corpTitle': 'Junior Manager', 'lastSync': '2024-03-19'}}	
+2024-03-19 15:46:40,845 INFO: /login/ 	response:{'responseCode': '00', 'responseMessage': 'adiliyanisaputra@corp.bri.co.id'}	

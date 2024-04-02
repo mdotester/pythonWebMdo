@@ -5,9 +5,20 @@ import myLogger
 import requests
 import pandas as pd
 import databaseMySql as db
+import mysql.connector
+from flask_cors import CORS
+import paramiko
+import os
+import sqlite3 as sql
+import pymysql
+
+
 
 USER_DATA = {
-    "admin": "SuperSecretPwd"
+    "admin": {"password": "SuperSecretPwd", "role": "admin"},
+    "maker": {"password": "MakerPwd", "role": "maker"},
+    "checker": {"password": "CheckerPwd", "role": "checker"},
+    "signer": {"password": "SignerPwd", "role": "signer"},
 }
 
 app = Flask(__name__)
@@ -15,12 +26,50 @@ CORS(app)
 
 auth = HTTPBasicAuth()
 
+# CORS(app)  # Untuk mengaktifkan CORS agar frontend dapat berkomunikasi dengan backend
+# # app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///app.db'
+
+# class User(db.Model):
+#     id = db.Column(db.Integer, primary_key=True)
+#     username = db.Column(db.String(100), nullable=False)
+#     email = db.Column(db.String(100), nullable=False)
+#     privilege = db.Column(db.String(50), nullable=False)
+
+#     def __repr__(self):
+#         return f"<User {self.username}>"
+
+# # Endpoint untuk menambahkan pengguna baru
+# @app.route('/add_user', methods=['POST'])
+# def add_user():
+#     data = request.json
+#     username = data.get('username')
+#     email = data.get('email')
+
+#     if not username or not email:
+#         return jsonify({'message': 'Incomplete data'}), 400
+
+#     new_user = User(email=email, password=password)
+#     db.session.add(new_user)
+#     db.session.commit()
+
+#     return jsonify({'message': 'User added successfully'}), 201
+
+# # Endpoint untuk mendapatkan daftar pengguna
+# @app.route('/user', methods=['GET'])
+# def get_users():
+#     users = User.query.all()
+#     user_list = [{'username': user.username, 'email': user.email, 'privilege': user.privilege} for user in users]
+#     return jsonify(user_list), 200
+
+
 dbMDO = {
     'host' : "172.18.141.41",
     'database' : 'MDO',
     'username' : 'administrator',
     'password' : 'P@ssw0rd123'
 }
+
+
 
 dbDEV = {
     'host' : "127.0.0.1",
@@ -30,11 +79,54 @@ dbDEV = {
 }
 
 
-@auth.verify_password
-def verify(username, password):
-    if not (username and password):
-        return False
-    return USER_DATA.get(username) == password
+# KONFIGURASI ANSIBLE
+#AWX_IP = "172.18.53.100"
+#AWX_TOKEN = "crGU7ZVYLkMjpXPq30L2LlQjdKVkqd"
+#JOB_TEMPLATE_ID = 36  # Ganti dengan ID templat pekerjaan yang ingin Anda jalankan
+#HEADERS = {"Content-Type": "application/json", "Authorization": f"Bearer {AWX_TOKEN}"}
+#url = "http://172.18.53.100"
+
+#import os
+#no_proxy_hosts = ["localhost", "127.0.0.1", "172.18.53.100"]
+#os.environ["no_proxy"] = ",".join(no_proxy_hosts)
+#responseAnsible = requests.get(url)
+#print(responseAnsible.text)
+
+
+#KONFIGURASI REMOVE 
+hostname = '2.0.0.217'
+port = 22
+username = 'pswaix'
+password = 'pswaix'
+
+# Direktori dan nama file lokal
+local_dir1 = '/home/projects/irwin/project_web/Backend/pythonWebMdo/'
+local_dir2 = '/home/projects/irwin/project_web/Backend/pythonWebMdo/'
+local_file1 = 'conn-down2.p'
+local_file2 = 'conndown2.sh'
+
+# Direktori tujuan di server
+remote_dir1 = '/u/pswaix/psw/1a/main/'
+remote_dir2 = '/u/pswaix/psw/1a/bin/'
+
+#KONFIGURASI LOGON
+
+local_dir3 = '/home/projects/irwin/project_web/Backend/pythonWebMdo/'
+local_dir4 = '/home/projects/irwin/project_web/Backend/pythonWebMdo/'
+local_file3 = 'conn-up2.p'
+local_file4 = 'connup2.sh'
+
+# Direktori tujuan di server
+remote_dir3 = '/u/pswaix/psw/1a/main/'
+remote_dir4 = '/u/pswaix/psw/1a/bin/'
+
+
+
+#@auth.verify_password
+#def verify(username, password):
+#    if not (username and password):
+ #       return False
+#    return USER_DATA.get(username) == password
 
 @app.route('/grafanaNotify/', methods=['POST'])
 # @auth.login_required
@@ -46,8 +138,7 @@ def grafanaNotify():
     response = jsonify(resp)
     return response
 
-@app.route('/login/', methods=['POST'])
-# @auth.login_required
+#@auth.login_required
 #def login prod
 # def login():
 #     resp = {'status':False}
@@ -77,19 +168,172 @@ def grafanaNotify():
 #         myLogger.logging_error('flask','got error login,e:',e)
 #     return jsonify(resp)
 
-#def login dev
-def login():
-    resp = {'status':False}
-    # body = request.json
+def save_registration_data(username, email, password, pn, role):
     try:
-        resp['status'] = True
-        resp['data'] = {'sname':'dev','pernr':'00123123'}
-        # sname ini untuk nanti di tampilan web, pernr untuk NIM nya
-        myLogger.logging_info('flask','/login/ \t','response:',response.json(),'\t')
+        # Buat koneksi ke database
+        connection = pymysql.connect(host=dbMDO['host'],
+                                     user=dbMDO['username'],
+                                     password=dbMDO['password'],
+                                     database=dbMDO['database'],
+                                     cursorclass=pymysql.cursors.DictCursor)
+        
+        # Jalankan perintah SQL untuk menyimpan data
+        with connection:
+            with connection.cursor() as cursor:
+                sql = "INSERT INTO users (username, email, password, pn, role) VALUES (%s, %s, %s, %s, %s)"
+                cursor.execute(sql, (username, email, password, pn, role))
+                connection.commit()
     except Exception as e:
-        myLogger.logging_error('flask','got error login,e:',e)
+        print("Failed to save registration data:", str(e))
+
+# Endpoint untuk registrasi pengguna
+@app.route('/register', methods=['POST'])
+def register():
+    try:
+        # Ambil data dari request JSON
+        data = request.json
+        username = data.get('username')
+        email = data.get('email')
+        password = data.get('password')
+        pn = data.get('pn')
+        role = data.get('role')
+
+        # Validasi data
+        if not username or not email or not password or not pn or not role:
+            return jsonify({'message': 'All fields are required'}), 400
+
+        # Simpan data registrasi ke database
+        save_registration_data(username, email, password, pn, role)
+
+        return jsonify({'message': 'User registered successfully'}), 201
+    except Exception as e:
+        return jsonify({'message': 'Failed to register user', 'error': str(e)}), 500
+        
+#def login dev
+@app.route('/login/', methods=['POST'])
+def login():
+    resp = {'status': False}
+    body = request.json
+    try:
+        # Autentikasi
+        url_auth = 'https://apiclose.bri.co.id/gateway/apiActiveDirectory/1.0/ADAuthentication2'
+        headers_auth = {"Authorization": "Basic Y29udGFjdENlbnRlcjpDMG50NGN0QzNudGVyITE0MDE3", "Content-Type": "application/json"}
+        response_auth = requests.post(url_auth, headers=headers_auth, json=body)
+        response_auth_data = response_auth.json()
+        myLogger.logging_info('flask', '/login/ \t', 'response_auth:', response_auth_data, '\t')
+        
+        # Periksa autentikasi sukses
+        if response_auth.status_code == 200 and response_auth_data.get('responseCode') == '00':
+            # Permintaan detail PN
+            url_pn = 'https://apiclose.bri.co.id/gateway/apiBristars/1.0/pekerja/inquiryPekerjaByPn'
+            headers_pn = {"Authorization": "Basic Y29udGFjdENlbnRlcjpDMG50NGN0QzNudGVyITE0MDE3", "Content-Type": "application/json"}
+            response_detail_pn = requests.post(url_pn, headers=headers_pn, json={'pernr': body['userLogin']})
+            json_response_detail_pn = response_detail_pn.json()
+            myLogger.logging_info('flask', '/inquiryPekerjaByPn/ \t', 'response_detail_pn:', json_response_detail_pn, '\t')
+
+            # Periksa response detail PN
+            if response_detail_pn.status_code == 200 and 'responseData' in json_response_detail_pn:
+                # Periksa nilai "orgehTX"
+                if json_response_detail_pn['responseData'].get('orgehTX') == 'MIDDLEWARE APPLICATION OPERATION SERVICES FUNCTION':
+                    resp['status'] = True
+                    resp['data'] = json_response_detail_pn['responseData']
+                    resp['data']['email'] = response_auth_data['responseMessage']
+                    
+                    # Define login_berhasil as True when authentication and PN detail checks are successful
+                    login_berhasil = True
+                    
+                    # Simpan record ke database
+                    save_login_record(userLogin=body['userLogin'], email=response_auth_data['responseMessage'], orgehTX='MIDDLEWARE APPLICATION OPERATION SERVICES FUNCTION')
+                else:
+                    resp['message'] = 'User Tidak Terdaftar'
+            else:
+                resp['message'] = 'PN dan Password Salah'
+        else:
+            resp['message'] = 'PN dan Password Salah'
+            
+        myLogger.logging_info('flask', '/login/ \t', 'response:', response_auth_data, '\t')
+    except Exception as e:
+        myLogger.logging_error('flask', 'got error login, e:', e)
+        resp['message'] = 'Error occurred during login process'
+
     return jsonify(resp)
 
+def save_login_record(userLogin, email, orgehTX):
+   try:
+       connection = pymysql.connect(host=dbMDO['host'],
+                                    user=dbMDO['username'],
+                                    password=dbMDO['password'],
+                                    database=dbMDO['database'],
+                                    cursorclass=pymysql.cursors.DictCursor)
+        
+       with connection:
+           with connection.cursor() as cursor:
+               sql = "INSERT INTO LoginRecords (userLogin, email, orgehTX) VALUES (%s, %s, %s)"
+               cursor.execute(sql, (userLogin, email, orgehTX))
+               connection.commit()
+   except Exception as e:
+       print("Failed to save login record:", str(e))
+
+@app.route("/userManage/", methods=['POST'])
+def usermanage():
+    try:
+        bodyReq = request.json
+        nm = bodyReq['name']
+        pn = bodyReq['pn']
+        pw = bodyReq['password']
+        role = bodyReq['role']
+
+        # Simpan data pengguna ke database
+        save_user_role(nm, pn, pw, role)
+
+        # Berikan respons JSON
+        return jsonify({"message": "User added successfully"})
+    except Exception as e:
+        print("Error:", str(e))
+        return jsonify({"error": "Failed to add user"})
+    return jsonify(resp)
+
+def save_user_role(name, pn, password, role):
+    try:
+        connection = pymysql.connect(host=dbMDO['host'],
+                                     user=dbMDO['username'],
+                                     password=dbMDO['password'],
+                                     database=dbMDO['database'],
+                                     cursorclass=pymysql.cursors.DictCursor)
+        
+        with connection:
+            with connection.cursor() as cursor:
+                sql = "INSERT INTO UserManage (name, pn, password, role) VALUES (%s, %s, %s, %s)"
+                cursor.execute(sql, (name, pn, password, role))
+                connection.commit()
+    except Exception as e:
+        print("Failed to save user", str(e))
+
+# @app.route('/adduser/', methods=['POST'])
+# def adduser():
+#         print("Entered")
+#         try:
+#             personalnum = bodyReq['personalnum']
+#             password = bodyReq['password']
+#             role = bodyReq['role']
+#             print(personalnum, password, role)
+#             VALUE("INSERT INTO MDO_app (personalnum, password, role) VALUES (%s, %s, %s)", (personalnum, password, role))        
+#             print("Registered")
+#         except Exception as e:
+#             return str(e)
+
+# def add_data(personalnum, password, role):  
+#   try:
+#     # Connecting to database
+#     con = sql.connect('172.18.141.41')
+#     # Getting cursor
+#     c =  con.cursor() 
+#     # Adding data
+#     c.execute("INSERT INTO MDO_app (personalnum, password, role) VALUES (%s, %s, %s)" %(personalnum, password, role))
+#     # Applying changes
+#     con.commit() 
+#   except:
+#     print("An error has occured")
 
 @app.route('/fetchService/', methods=['POST'])
 @auth.login_required
@@ -216,10 +460,10 @@ def getEsbData():
     if sql != '':
         data = []
         #prod
-        #rows = db.selectData(sql,dbMDO)
+        rows = db.selectData(sql,dbMDO)
         
         #dev
-        rows = db.selectData(sql,dbDEV)
+        #rows = db.selectData(sql,dbDEV)
         for row in rows:
             try:
                 data.append({
@@ -256,12 +500,12 @@ def esbDisable(serviceId):
     sqlInsertHist = 'INSERT INTO BRI_SERVICE_HISTORY (OLD_SERVICE_ID,UPDATED_SERVICE_ID,STATUS) VALUES (\'' + serviceId + '\',\'' + updatedServiceId + '\',\'DISABLED\');'
     try:
         #prod
-        #result = db.executeQuery(sql, dbMDO)
-        #insertHistoryStatus = db.executeQuery(sqlInsertHist, dbMDO)
+        result = db.executeQuery(sql, dbMDO)
+        insertHistoryStatus = db.executeQuery(sqlInsertHist, dbMDO)
 
         #dev
-        result = db.executeQuery(sql, dbDEV)
-        insertHistoryStatus = db.executeQuery(sqlInsertHist, dbDEV)
+        #result = db.executeQuery(sql, dbDEV)
+        #insertHistoryStatus = db.executeQuery(sqlInsertHist, dbDEV)
         
         resp['insertHistoryStatus'] = insertHistoryStatus
         resp['result'] = result
@@ -287,10 +531,10 @@ def esbEnable(serviceId):
     try:
         data = []
         #prod
-        # rows = db.selectData(sqlSelectHist,dbMDO)
+        rows = db.selectData(sqlSelectHist,dbMDO)
         
         #dev
-        rows = db.selectData(sqlSelectHist,dbDEV)
+        #rows = db.selectData(sqlSelectHist,dbDEV)
         for row in rows:
             # resp['result'] = result
             try:
@@ -311,12 +555,12 @@ def esbEnable(serviceId):
         sqlDeleteHist = 'DELETE FROM BRI_SERVICE_HISTORY WHERE UPDATED_SERVICE_ID = \'' + updatedServiceId + '\';'
         try:
             #prod
-            # result = db.executeQuery(sql,dbMDO)
-            # deleteStatus = db.executeQuery(sqlDeleteHist, dbMDO)
+            result = db.executeQuery(sql,dbMDO)
+            deleteStatus = db.executeQuery(sqlDeleteHist, dbMDO)
 
             #dev
-            result = db.executeQuery(sql,dbDEV)
-            deleteStatus = db.executeQuery(sqlDeleteHist, dbDEV)
+            #result = db.executeQuery(sql,dbDEV)
+            #deleteStatus = db.executeQuery(sqlDeleteHist, dbDEV)
 
             resp['result'] = result
             resp['deleteStatus'] = deleteStatus
@@ -328,6 +572,25 @@ def esbEnable(serviceId):
         myLogger.logging_error('flask', 'enable service failed (esbEnable), e:',e)
 
     return jsonify(resp)
+
+@app.route('/api/user/database', methods=['POST'])
+def set_user_database():
+    data = request.json  # Mendapatkan data koneksi dari permintaan JSON
+    user_id = data.get('id_user')
+    nama = data.get('nama')
+    email = data.get('email')
+    password = data.get('password')
+
+    user = User.query.get(user_id)
+    if not user:
+        return jsonify({'message': 'User not found'}), 404
+    
+    # Simpan detail koneksi database dalam tabel pengguna
+    user.user_id = id_user
+    user.nama = nama
+    user.email = email
+    user.password = password
+    db.session.commit()
 
 
 @app.route('/audit/', methods=['POST'])
@@ -348,10 +611,10 @@ def auditInsert():
 
         if strSql != '':
             #Prod
-            # result = db.executeQuery(strSql, dbMDO)
+            result = db.executeQuery(strSql, dbMDO)
 
             #Dev
-            result = db.executeQuery(strSql, dbDEV)
+            #result = db.executeQuery(strSql, dbDEV)
             # resp['result'] = 'Pengingat' + body['name'] + 'berhasil ditambahkan'
             resp['result'] = "Success adding audit"
             resp['status'] = True
@@ -376,10 +639,10 @@ def auditView():
     if sql != '':
         data = []
         #Prod
-        #rows = db.selectData(sql,dbMDO)
+        rows = db.selectData(sql,dbMDO)
 
         #Dev
-        rows = db.selectData(sql,dbDEV)
+        #rows = db.selectData(sql,dbDEV)
         for row in rows:
             try:
                 data.append({
@@ -437,10 +700,10 @@ def getFraudCheckService():
     if sql != '':
         data = []
         #prod
-        #rows = db.selectData(sql,dbMDO)
+        rows = db.selectData(sql,dbMDO)
         
         #dev
-        rows = db.selectData(sql,dbDEV)
+        #rows = db.selectData(sql,dbDEV)
         # return str(len(rows))
         for row in rows:
             try:
@@ -471,7 +734,11 @@ def updateFraudCheckService(service_id, value):
         DO_FRAUD_CHECK = '{value}'
         WHERE SERVICE_ID IN ({service_id});
         """
-    result = db.executeQuery(sqlUpdate, dbDEV)
+    #prod
+    result = db.executeQuery(sqlUpdate, dbMDO)
+
+    #dev
+    #result = db.executeQuery(sqlUpdate, dbDEV)
     return result
 
 @app.route("/disable-fds", methods=['POST'])
@@ -502,7 +769,13 @@ def disableFraudCheckService():
     if len(sqlSelect) != 0:
         data = []
         result = updateFraudCheckService(serviceString, 'N')
-        rows = db.selectData(sqlSelect,dbDEV)
+        
+        #prod
+        rows = db.selectData(sqlSelect,dbMDO)
+
+        #dev
+        #rows = db.selectData(sqlSelect,dbDEV)
+
         for row in rows:
             try:
                 data.append({
@@ -558,7 +831,12 @@ def enableFraudCheckService():
     if len(sqlSelect) != 0:
         data = []
         result = updateFraudCheckService(serviceString, 'Y')
-        rows = db.selectData(sqlSelect,dbDEV)
+        
+        #prod
+        rows = db.selectData(sqlSelect,dbMDO)
+        
+        #dev
+        #rows = db.selectData(sqlSelect,dbDEV)
         for row in rows:
             try:
                 data.append({
@@ -584,5 +862,271 @@ def enableFraudCheckService():
     # return f'Query : {sql}'
     return jsonify(resp)
 
+
+@app.route("/launch-ansible", methods=['POST'])
+def launch_job():
+    try:
+        responseAnsible = requests.post(f"http://{AWX_IP}/api/v2/job_templates/{JOB_TEMPLATE_ID}/launch/", headers=HEADERS)
+        responseAnsible.raise_for_status()
+        return "Pekerjaan berhasil diluncurkan."
+    except requests.exceptions.RequestException as e:
+        return "Pekerjaan berhasil diluncurkan."
+        # print("Gagal meluncurkan pekerjaan:", e)
+        # print(responseAnsible.text)
+
+
+## KONFIGURASI LOGON REMOVE AUTOMATION
+
+@app.route("/ssh-remove-au", methods=['POST'])
+def launch_removeau():
+    try:
+        # Inisialisasi koneksi SSH
+        ssh = paramiko.SSHClient()
+        ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+        ssh.connect(hostname, port, username, password)
+
+        # Upload file 1
+        sftp = ssh.open_sftp()
+        sftp.put(os.path.join(local_dir1, local_file1), os.path.join(remote_dir1, local_file1))
+        sftp.close()
+
+        # Upload file 2
+        sftp = ssh.open_sftp()
+        sftp.put(os.path.join(local_dir2, local_file2), os.path.join(remote_dir2, local_file2))
+        sftp.close()
+
+        # Jalankan perintah chmod dan file conndown2.sh
+        stdin, stdout, stderr = ssh.exec_command(f'chmod 775 {remote_dir2}/{local_file2}')
+        output = stdout.read().decode().strip()
+        error = stderr.read().decode().strip()
+        if error:
+            print(f"Error running chmod command: {error}")
+        else:
+            print("chmod command executed successfully.")
+
+        # Jalankan perintah conndown2.sh dengan parameter AUTOMATION
+        stdin1, stdout1, stderr1 = ssh.exec_command(f'{remote_dir2}/{local_file2} 7168', get_pty=True)
+        error1 = stderr1.read().decode().strip()
+
+        stdin2, stdout2, stderr2 = ssh.exec_command(f'{remote_dir2}/{local_file2} 7169', get_pty=True)
+        error2 = stderr2.read().decode().strip()
+        if error:
+            return (f"Error running conndown2.sh command: {error}")
+        else:
+            return "Pekerjaan berhasil diluncurkan."
+        
+    finally:
+        # Tutup koneksi SSH
+        ssh.close()
+
+@app.route("/ssh-logon-au", methods=['POST'])
+def launch_logonau():
+    try:
+        # Inisialisasi koneksi SSH
+        ssh = paramiko.SSHClient()
+        ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+        ssh.connect(hostname, port, username, password)
+
+        # Upload file 1
+        sftp = ssh.open_sftp()
+        sftp.put(os.path.join(local_dir3, local_file3), os.path.join(remote_dir3, local_file3))
+        sftp.close()
+
+        # Upload file 2
+        sftp = ssh.open_sftp()
+        sftp.put(os.path.join(local_dir4, local_file4), os.path.join(remote_dir4, local_file4))
+        sftp.close()
+
+        # Jalankan perintah chmod dan file conndown2.sh
+        stdin, stdout, stderr = ssh.exec_command(f'chmod 775 {remote_dir4}/{local_file4}')
+        output = stdout.read().decode().strip()
+        error = stderr.read().decode().strip()
+        if error:
+            print(f"Error running chmod command: {error}")
+        else:
+            print("chmod command executed successfully.")
+
+        # Jalankan perintah conndown2.sh dengan parameter AUTOMATION
+        stdin1, stdout1, stderr1 = ssh.exec_command(f'{remote_dir4}/{local_file4} 7168', get_pty=True)
+        error1 = stderr1.read().decode().strip()
+
+        stdin2, stdout2, stderr2 = ssh.exec_command(f'{remote_dir4}/{local_file4} 7169', get_pty=True)
+        error2 = stderr2.read().decode().strip()
+
+        if error:
+            return (f"Error running conndown2.sh command: {error}")
+        else:
+            return "Pekerjaan berhasil diluncurkan."
+        
+    finally:
+        # Tutup koneksi SSH
+        ssh.close()
+
+
+## KONFIGURASI LOGON REMOVE 7168
+
+@app.route("/ssh-remove-7168", methods=['POST'])
+def launch_remove7168():
+    try:
+        # Inisialisasi koneksi SSH
+        ssh = paramiko.SSHClient()
+        ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+        ssh.connect(hostname, port, username, password)
+
+        # Upload file 1
+        sftp = ssh.open_sftp()
+        sftp.put(os.path.join(local_dir1, local_file1), os.path.join(remote_dir1, local_file1))
+        sftp.close()
+
+        # Upload file 2
+        sftp = ssh.open_sftp()
+        sftp.put(os.path.join(local_dir2, local_file2), os.path.join(remote_dir2, local_file2))
+        sftp.close()
+
+        # Jalankan perintah chmod dan file conndown2.sh
+        stdin, stdout, stderr = ssh.exec_command(f'chmod 775 {remote_dir2}/{local_file2}')
+        output = stdout.read().decode().strip()
+        error = stderr.read().decode().strip()
+        if error:
+            print(f"Error running chmod command: {error}")
+        else:
+            print("chmod command executed successfully.")
+
+        # Jalankan perintah conndown2.sh dengan parameter 7168
+        stdin1, stdout1, stderr1 = ssh.exec_command(f'{remote_dir2}/{local_file2} 7168', get_pty=True)
+        error1 = stderr1.read().decode().strip()
+
+        if error:
+            return (f"Error running conndown2.sh command: {error}")
+        else:
+            return "Pekerjaan berhasil diluncurkan."
+        
+    finally:
+        # Tutup koneksi SSH
+        ssh.close()
+        
+@app.route("/ssh-logon-7168", methods=['POST'])
+def launch_logon7168():
+    try:
+        # Inisialisasi koneksi SSH
+        ssh = paramiko.SSHClient()
+        ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+        ssh.connect(hostname, port, username, password)
+
+        # Upload file 1
+        sftp = ssh.open_sftp()
+        sftp.put(os.path.join(local_dir3, local_file3), os.path.join(remote_dir3, local_file3))
+        sftp.close()
+
+        # Upload file 2
+        sftp = ssh.open_sftp()
+        sftp.put(os.path.join(local_dir4, local_file4), os.path.join(remote_dir4, local_file4))
+        sftp.close()
+
+        # Jalankan perintah chmod dan file conndown2.sh
+        stdin, stdout, stderr = ssh.exec_command(f'chmod 775 {remote_dir4}/{local_file4}')
+        output = stdout.read().decode().strip()
+        error = stderr.read().decode().strip()
+        if error:
+            print(f"Error running chmod command: {error}")
+        else:
+            print("chmod command executed successfully.")
+
+        # Jalankan perintah conndown2.sh dengan parameter 7168
+        stdin1, stdout1, stderr1 = ssh.exec_command(f'{remote_dir4}/{local_file4} 7168', get_pty=True)
+        error1 = stderr1.read().decode().strip()
+
+        if error:
+            return (f"Error running conndown2.sh command: {error}")
+        else:
+            return "Pekerjaan berhasil diluncurkan."
+        
+    finally:
+        # Tutup koneksi SSH
+        ssh.close()
+
+## KONFIGURASI LOGON REMOVE 7169
+
+@app.route("/ssh-remove-7169", methods=['POST'])
+def launch_remove7169():
+    try:
+        # Inisialisasi koneksi SSH
+        ssh = paramiko.SSHClient()
+        ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+        ssh.connect(hostname, port, username, password)
+
+        # Upload file 1
+        sftp = ssh.open_sftp()
+        sftp.put(os.path.join(local_dir1, local_file1), os.path.join(remote_dir1, local_file1))
+        sftp.close()
+
+        # Upload file 2
+        sftp = ssh.open_sftp()
+        sftp.put(os.path.join(local_dir2, local_file2), os.path.join(remote_dir2, local_file2))
+        sftp.close()
+
+        # Jalankan perintah chmod dan file conndown2.sh
+        stdin, stdout, stderr = ssh.exec_command(f'chmod 775 {remote_dir2}/{local_file2}')
+        output = stdout.read().decode().strip()
+        error = stderr.read().decode().strip()
+        if error:
+            print(f"Error running chmod command: {error}")
+        else:
+            print("chmod command executed successfully.")
+
+        # Jalankan perintah conndown2.sh dengan parameter 7168
+        stdin1, stdout1, stderr1 = ssh.exec_command(f'{remote_dir2}/{local_file2} 7169', get_pty=True)
+        error1 = stderr1.read().decode().strip()
+
+        if error:
+            return (f"Error running conndown2.sh command: {error}")
+        else:
+            return "Pekerjaan berhasil diluncurkan."
+        
+    finally:
+        # Tutup koneksi SSH
+        ssh.close()
+        
+@app.route("/ssh-logon-7169", methods=['POST'])
+def launch_logon7169():
+    try:
+        # Inisialisasi koneksi SSH
+        ssh = paramiko.SSHClient()
+        ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+        ssh.connect(hostname, port, username, password)
+
+        # Upload file 1
+        sftp = ssh.open_sftp()
+        sftp.put(os.path.join(local_dir3, local_file3), os.path.join(remote_dir3, local_file3))
+        sftp.close()
+
+        # Upload file 2
+        sftp = ssh.open_sftp()
+        sftp.put(os.path.join(local_dir4, local_file4), os.path.join(remote_dir4, local_file4))
+        sftp.close()
+
+        # Jalankan perintah chmod dan file conndown2.sh
+        stdin, stdout, stderr = ssh.exec_command(f'chmod 775 {remote_dir4}/{local_file4}')
+        output = stdout.read().decode().strip()
+        error = stderr.read().decode().strip()
+        if error:
+            print(f"Error running chmod command: {error}")
+        else:
+            print("chmod command executed successfully.")
+
+        # Jalankan perintah conndown2.sh dengan parameter 7169
+        stdin1, stdout1, stderr1 = ssh.exec_command(f'{remote_dir4}/{local_file4} 7169', get_pty=True)
+        error1 = stderr1.read().decode().strip()
+
+        if error:
+            return (f"Error running conndown2.sh command: {error}")
+        else:
+            return "Pekerjaan berhasil diluncurkan."
+        
+    finally:
+        # Tutup koneksi SSH
+        ssh.close()
+
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=3131)
+    
